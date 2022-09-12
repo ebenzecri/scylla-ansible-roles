@@ -1,0 +1,53 @@
+---
+- name: Rolling decommission across a Scylla cluster
+  hosts: scylla
+  serial: 1
+  gather_facts: false
+  vars:
+    - scylla_api_address: 127.0.0.1
+    - scylla_api_port: 10000
+    - api_retries: 604800
+    - api_delay: 60
+  tasks:
+    - name: Check API availability
+      ansible.builtin.uri:
+        url: "http://{{ scylla_api_address }}:{{ scylla_api_port }}/storage_service/scylla_release_version"
+        method: GET
+
+    - name: Check for leaving nodes (and wait if there is any decommision process in progress)
+      ansible.builtin.uri:
+        url: "http://{{ scylla_api_address }}:{{ scylla_api_port }}/storage_service/nodes/leaving"
+        method: GET
+      register: leaving_nodes
+      until:
+       - leaving_nodes.status == 200
+       - leaving_nodes.json |length == 0
+      retries: "{{ api_retries }}"
+      delay: "{{ api_delay }}"
+
+    - name: Start node decommission
+      ansible.builtin.uri:
+        url: "http://{{ scylla_api_address }}:{{ scylla_api_port }}/storage_service/decommission"
+        method: POST
+      retries: "{{ api_retries }}"
+      delay: "{{ api_delay }}"
+      ignore_errors: true
+
+    - name: Check node decommission status
+      ansible.builtin.uri:
+        url: "http://{{ scylla_api_address }}:{{ scylla_api_port }}/storage_service/operation_mode"
+        method: GET
+      register: node_decommission_status
+      until: node_decommission_status.json == "DECOMMISSIONED"
+      retries: "{{ api_retries }}"
+      delay: "{{ api_delay }}"
+
+    - name: Stop and disable 'scylla-server' service
+      service:
+        name: scylla-server
+        state: stopped
+        enabled: false
+      when:
+        - node_decommission_status is defined
+        - node_decommission_status.json == "DECOMMISSIONED"
+      become: true
