@@ -34,54 +34,78 @@
       when: scylla_raid_setup is defined and scylla_raid_setup|length > 0 and scylla_raid_setup|length != present_raid_disks.stdout|int
       ignore_errors: true
 
+- name: IO settings files path
+  ansible.builtin.set_fact:
+    io_properties_yaml_file: "/etc/scylla.d/io_properties.yaml"
+    io_conf_file: "/etc/scylla.d/io.conf"
+
+- name: IO settings group name
+  # If Ansible inventory uses groups of groups (multi-DC/multi-group deployment), last group of group list is the 'leaf' group.
+  # This also works for single-DC/single-group deployment.
+  ansible.builtin.set_fact:
+    ansible_root_group: "{{ group_names |last }}"
+
 - name: IO settings probe
   block:
-    - name: check for existing io_properties
-      stat:
-        path: /etc/scylla.d/io_properties.yaml
+    - name: "Check if '{{ io_properties_yaml_file }}' exists"
+      ansible.builtin.stat:
+        path: "{{ io_properties_yaml_file }}"
       register: io_prop_stat
 
-    - name: Measure IO settings on one node
-      shell: |
-        scylla_io_setup
+    - name: Measure IO settings on probing node
+      ansible.builtin.shell: scylla_io_setup
       when: io_prop_stat.stat.exists|bool == False
 
-    - name: store /etc/scylla.d/io_properties.yaml
-      shell: |
-        cat /etc/scylla.d/io_properties.yaml
+    - name: "Store '{{ io_properties_yaml_file }}' content"
+      ansible.builtin.shell: "cat {{ io_properties_yaml_file }}"
       register: _io_properties
 
-    - set_fact:
-        io_properties: "{{ _io_properties.stdout }}"
-
-    - name: store /etc/scylla.d/io.conf
-      shell: |
-        cat /etc/scylla.d/io.conf
+    - name: "Store '{{ io_conf_file }}' content"
+      ansible.builtin.shell: "cat {{ io_conf_file }}"
       register: _io_conf
-
-    - set_fact:
-        io_conf: "{{ _io_conf.stdout_lines[0] }}"
-  when: scylla_io_probe|bool == True
-  run_once: true
+  when:
+    - scylla_io_probe |bool == True
+    - inventory_hostname == groups[ansible_root_group][0]
   become: true
 
-- name: Set io.conf
-  lineinfile:
-    path: /etc/scylla.d/io.conf
+- name: Set gathered IO settings (single-DC/single-group)
+  ansible.builtin.set_fact:
+    io_conf: "{{ hostvars[groups[ansible_root_group][0]]['_io_conf'].stdout_lines[0] }}"
+    io_properties: "{{ hostvars[groups[ansible_root_group][0]]['_io_properties'].stdout }}"
+  when:
+    - node_group is not defined
+    - scylla_io_probe |bool == True
+
+- name: Set gathered IO settings (multi-DC/multi-group)
+  ansible.builtin.set_fact:
+    io_conf__dc_{{ dc |replace('-','') }}_group_{{ node_group }}: "{{ hostvars[groups[ansible_root_group][0]]['_io_conf'].stdout_lines[0] }}"
+    io_properties__dc_{{ dc |replace('-','') }}_group_{{ node_group }}: "{{ hostvars[groups[ansible_root_group][0]]['_io_properties'].stdout }}"
+  when:
+    - node_group is defined
+    - scylla_io_probe |bool == True
+
+- name: "Write '{{ io_conf_file }}'"
+  ansible.builtin.lineinfile:
+    path: "{{ io_conf_file }}"
     regexp: '^SEASTAR_IO='
     line: "{{ io_conf }}"
     create: yes
   become: true
-  when: io_conf is defined
+  when:
+    - io_conf is defined
+    - io_conf |length > 0
 
-- name: Set io_properties
-  template:
+- name: "Write '{{ io_properties_yaml_file }}'"
+  ansible.builtin.template:
     src: templates/io_properties.yaml.j2
-    dest: /etc/scylla.d/io_properties.yaml
+    dest: "{{ io_properties_yaml_file }}"
     owner: root
     group: root
     mode: '0644'
   become: true
+  when:
+    - io_properties is defined
+    - io_properties |length > 0
 
 - name: configure NTP
   shell: |
