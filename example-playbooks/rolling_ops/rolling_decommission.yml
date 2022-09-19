@@ -41,6 +41,7 @@
       until: node_decommission_status.json == "DECOMMISSIONED"
       retries: "{{ api_retries }}"
       delay: "{{ api_delay }}"
+      fails_when: node_decommission_status.json == "NORMAL"
 
     - name: Stop and disable 'scylla-server' service
       service:
