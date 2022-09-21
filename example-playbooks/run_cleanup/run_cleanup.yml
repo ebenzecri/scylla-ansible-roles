@@ -4,22 +4,26 @@
   hosts: scylla
   gather_facts: false
   serial: "{{ batch_size |default(1) }}"
+  vars:
+    cleanup_async: 2592000
+    cleanup_retries: 43200
+    cleanup_delay: 60
   tasks:
-    - name: checking limit arg
+    - name: Check if '--limit' argument was used
       fail:
         msg: "You must use -l or --limit. To cleanup the entire cluster, use -l 'all'"
       when: ansible_limit is not defined
 
-    # 2592000 a month of seconds, retry every 1 minute
-    - name: Run cleanup
-      async_task:
-        script:  files/cleanup.sh
-        alias: scylla_cleanup
-        async: 2592000
-        retries: 43200
-        delay: 60
-      register: cleanup_output
+    - name: Run cleanup (no DC and rack aware)
+      ansible.builtin.import_tasks: cleanup.yaml
+      when:
+        - cleanup_dc is not defined
+        - cleanup_rack is not defined
 
-    - name: Cleanup logs
-      debug: var=cleanup_output
-
+    - name: Run cleanup (DC and rack aware)
+      ansible.builtin.import_tasks: cleanup.yaml
+      when:
+        - cleanup_dc is defined
+        - cleanup_rack is defined
+        - cleanup_dc == dc
+        - cleanup_rack == rack

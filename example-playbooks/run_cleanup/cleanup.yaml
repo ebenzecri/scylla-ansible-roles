@@ -1,0 +1,13 @@
+---
+- name: Run cleanup
+  async_task:
+    script:  files/cleanup.sh
+    alias: scylla_cleanup
+    async: "{{ cleanup_async }}"
+    retries: "{{ cleanup_retries }}"
+    delay: "{{ cleanup_delay }}"
+  register: cleanup_output
+
+- name: Cleanup logs
+  debug: var=cleanup_output
+
