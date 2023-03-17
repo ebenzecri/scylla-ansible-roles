@@ -1,5 +1,9 @@
 ---
 
+scylla_cluster_name: 'testcluster123'
+scylla_api_address: '127.0.0.1'
+scylla_api_port: '10000'
+
 # Set this to "nondocker" for a flat installation or "docker" for the dockerized install (recommended)
 # Default and recommended install is via docker
 install_type: 'docker'
@@ -8,8 +12,10 @@ install_type: 'docker'
 # to use `sudo`
 run_docker_with_sudo: False
 
-# The scylla_node role generates this file, which should be used with the monitoring.
-# Alternatively, this file can be written manually, following the example at the
+# Generates the list of nodes to be used by Scylla Monitoring
+generate_node_list: True
+
+# If the list of nodes is not being generated automatically, this file can be written manually following the example at the
 # scylla-monitoring github: https://github.com/scylladb/scylla-monitoring/blob/master/prometheus/scylla_servers.example.yml
 scylla_servers_yml_path: scylla_servers.yml
 

@@ -73,11 +73,31 @@
 - set_fact:
     base_dir: "{{ scylla_monitoring_deploy_path }}/{{ unpacked_files.files[0] }}"
 
-- name: insert scylla_servers.yml
-  copy:
-    src: "{{ scylla_servers_yml_path }}"
-    dest: "{{ scylla_monitoring_config_path }}/scylla_servers.yml"
-    mode: '0644'
+- name: set up scylla_servers.yml automatically
+  block:
+    - name: generate node list
+      include_tasks: node_list_generator.yml
+    - name: save node list into scylla_servers.yml
+      ansible.builtin.copy:
+        content: "{{ node_list.stdout }}"
+        dest: "{{ scylla_monitoring_config_path }}/scylla_servers.yml"
+        mode: '0644'
+  when: generate_node_list|bool
+
+- name: set up scylla_servers.yml manually
+  block:
+    - name: "check if {{ scylla_servers_yml_path }} exists"
+      ansible.builtin.stat:
+        path: "{{ scylla_servers_yml_path }}"
+      register: scylla_servers_yml
+      failed_when: not scylla_servers_yml.stat.exists
+    - name: "copy {{ scylla_servers_yml_path }} to Scylla Monitoring instance"
+      ansible.builtin.copy:
+        src: "{{ scylla_servers_yml_path }}"
+        dest: "{{ scylla_monitoring_config_path }}/scylla_servers.yml"
+        mode: '0644'
+      when: scylla_servers_yml.stat.exists
+  when: generate_node_list is not defined or not generate_node_list|bool
 
 - name: set up scylla_manager_servers.yml
   copy:
