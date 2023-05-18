@@ -1,58 +1,19 @@
 ---
-- name: create the install directory
-  file:
-    path: "{{ scylla_monitoring_deploy_path }}"
+- name: Create Scylla Monitoring directory hierarchy
+  ansible.builtin.file:
+    path: "{{ item }}"
     state: directory
-    mode: '1775'
+    mode: '0755'
     recurse: yes
     owner: "{{ ansible_user_id }}"
+    group: "{{ ansible_user_id }}"
   become: true
-
-- name: create the data directory
-  file:
-    path: "{{ scylla_monitoring_data_path }}"
-    state: directory
-    mode: '1777'
-    recurse: yes
-    owner: "{{ ansible_user_id }}"
-  become: true
-
-- name: change permissions for the data directory to nobody
-  file:
-    path: "{{ scylla_monitoring_data_path }}"
-    state: directory
-    mode: '1777'
-    recurse: yes
-    owner: "nobody"
-  become: true
-  when: run_docker_with_sudo is defined and run_docker_with_sudo|bool == True
-
-- name: create the config directory
-  file:
-    path: "{{ scylla_monitoring_config_path }}"
-    state: directory
-    mode: '1775'
-    recurse: yes
-    owner: "{{ ansible_user_id }}"
-  become: true
-
-- name: create the prom_rules directory
-  file:
-    path: "{{ scylla_monitoring_prom_rules_path }}"
-    state: directory
-    mode: '1775'
-    recurse: yes
-    owner: "{{ ansible_user_id }}"
-  become: true
-
-- name: create the alert data directory
-  file:
-    path: "{{ scylla_monitoring_alertdata_path }}"
-    state: directory
-    mode: '1777'
-    recurse: yes
-    owner: "{{ ansible_user_id }}"
-  become: true
+  loop:
+    - "{{ scylla_monitoring_deploy_path }}"
+    - "{{ scylla_monitoring_data_path }}"
+    - "{{ scylla_monitoring_config_path }}"
+    - "{{ scylla_monitoring_prom_rules_path }}"
+    - "{{ scylla_monitoring_alertdata_path }}"
 
 - name: download the monitoring archive
   get_url:
