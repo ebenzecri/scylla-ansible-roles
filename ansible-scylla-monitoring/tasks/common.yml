@@ -36,11 +36,11 @@
 
 - name: Get Scylla Monitoring archive name
   ansible.builtin.set_fact:
-    scylla_monitoring_archive_name: "{{ unpacked_files.files[0] }}"
+    scylla_monitoring_archive_name: "{{ monitoring_archive.dest }}"
 
 - name: Get Scylla Monitoring version
   ansible.builtin.set_fact:
-    scylla_monitoring_version: "{{ scylla_monitoring_archive_name.split('-') | last | replace ('/','') }}"
+    scylla_monitoring_version: "{{ scylla_monitoring_archive_name.split('-') | last | regex_replace ('(.tar.gz)|(.zip)','') }}"
 
 - name: Set Scylla Monitoring main directory
   ansible.builtin.set_fact:

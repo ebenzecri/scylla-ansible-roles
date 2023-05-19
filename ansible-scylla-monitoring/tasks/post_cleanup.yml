@@ -1,0 +1,9 @@
+---
+- name: "Remove '{{ scylla_monitoring_archive_name }}'"
+  ansible.builtin.file:
+    path: "{{ scylla_monitoring_archive_name }}"
+    state: absent
+  become: true
+  when:
+    - scylla_monitoring_archive_removal is defined
+    - scylla_monitoring_archive_removal | bool
