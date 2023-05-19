@@ -2,6 +2,9 @@
 # - name: os-specific vars
 #   include_vars: "{{ ansible_os_family }}.yml"
 
+- name: Check for any existing legacy installation/configuration
+  include_tasks: legacy.yml
+
 - name: os-specific tasks
   include_tasks: "{{ ansible_os_family }}.yml"
 

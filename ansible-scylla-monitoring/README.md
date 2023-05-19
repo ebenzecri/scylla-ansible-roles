@@ -25,6 +25,13 @@ Including an example of how to use your role (for instance, with variables passe
         - ansible-scylla-monitoring
 
 
+# [TODO] Deprecated variables and how to migrate data
+* scylla_monitoring_deploy_path: /opt/scylla-monitoring
+* scylla_monitoring_data_path: "{{ scylla_monitoring_deploy_path }}/data"
+* scylla_monitoring_config_path:  "{{ scylla_monitoring_deploy_path }}/config"
+* scylla_monitoring_prom_rules_path:  "{{ scylla_monitoring_config_path }}/prom_rules"
+* scylla_monitoring_alertdata_path: "{{ scylla_monitoring_deploy_path }}/alertdata"
+
 License
 -------
 

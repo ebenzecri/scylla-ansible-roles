@@ -2,7 +2,7 @@
 - name: download alert manager archive
   get_url:
     url: "{{ alert_manager_url }}"
-    dest: "{{ scylla_monitoring_deploy_path }}"
+    dest: "{{ scylla_monitoring_installation_path }}"
     mode: '0644'
     owner: "{{ ansible_user_id }}"
   register: alert_manager_archive
@@ -10,13 +10,13 @@
 - name: unpack the alert_manager archive
   unarchive:
     src: "{{ alert_manager_archive.dest }}"
-    dest: "{{ scylla_monitoring_deploy_path }}"
+    dest: "{{ scylla_monitoring_installation_path }}"
     remote_src: yes
     list_files: yes
   register: alert_manager_files
 
 - set_fact:
-    alert_manager_dir: "{{ scylla_monitoring_deploy_path }}/{{ alert_manager_files.files[0] }}"
+    alert_manager_dir: "{{ scylla_monitoring_installation_path }}/{{ alert_manager_files.files[0] }}"
 
 - name: Copy rule_config.yml from scylla-monitoring/prometheus directory to alertmanager.yml in the alertmanager directory
   copy:
@@ -37,7 +37,7 @@
 - name: download prometheus archive
   get_url:
     url: "{{ prometheus_url }}"
-    dest: "{{ scylla_monitoring_deploy_path }}"
+    dest: "{{ scylla_monitoring_installation_path }}"
     mode: '0644'
     owner: "{{ ansible_user_id }}"
   register: prometheus_archive
@@ -45,13 +45,13 @@
 - name: unpack the prometheus archive
   unarchive:
     src: "{{ prometheus_archive.dest }}"
-    dest: "{{ scylla_monitoring_deploy_path }}"
+    dest: "{{ scylla_monitoring_installation_path }}"
     remote_src: yes
     list_files: yes
   register: prometheus_files
 
 - set_fact:
-    prometheus_dir: "{{ scylla_monitoring_deploy_path }}/{{ prometheus_files.files[0] }}"
+    prometheus_dir: "{{ scylla_monitoring_installation_path }}/{{ prometheus_files.files[0] }}"
 
 - name: copy yml and template files into prometheus
   shell: |
@@ -110,7 +110,7 @@
         path: "{{ prometheus_dir }}/prometheus.yml"
 
 - name: start prometheus
-  raw: cd {{ prometheus_dir }} ; nohup ./prometheus --config.file=prometheus.yml --storage.tsdb.path {{ scylla_monitoring_data_path }} --storage.tsdb.retention.time={{ scylla_monitoring_retention }} {{ prometheus_args | default('')}}</dev/null >/dev/null 2>&1 & sleep 1
+  raw: cd {{ prometheus_dir }} ; nohup ./prometheus --config.file=prometheus.yml --storage.tsdb.path {{ scylla_monitoring_prometheus_data_path }} --storage.tsdb.retention.time={{ scylla_monitoring_retention }} {{ prometheus_args | default('')}}</dev/null >/dev/null 2>&1 & sleep 1
 
 - name: wait for prometheus to start
   wait_for:

@@ -1,0 +1,22 @@
+---
+- name: Fail if deprecated variables are being used
+  ansible.builtin.fail:
+    msg: "At least one deprecated variable is being used. Please, check README.md in order to use the right variables and migrate existing data."
+  when: scylla_monitoring_deploy_path is defined
+
+- name: "Check if '{{ scylla_monitoring_installation_path }}' exists"
+  ansible.builtin.stat:
+    path: "{{ scylla_monitoring_installation_path }}"
+  register: installation_directory
+
+- name: "Check if '{{ scylla_monitoring_var_path }}' exists"
+  ansible.builtin.stat:
+    path: "{{ scylla_monitoring_var_path }}"
+  register: var_directory
+
+- name: Fail if and old Scylla Monitoring installation is detected
+  ansible.builtin.fail:
+    msg: "There's an existing Scylla Monitoring installation. Please, check README.md to migrate existing data."
+  when:
+    - installation_directory.stat.exists
+    - not var_directory.stat.exists

@@ -1,7 +1,7 @@
 ---
 - name: Change owner and group for 'data' directory
   ansible.builtin.file:
-    path: "{{ scylla_monitoring_data_path }}"
+    path: "{{ scylla_monitoring_prometheus_data_path }}"
     state: directory
     mode: '1755'
     recurse: yes
@@ -48,13 +48,13 @@
     shell: |
       cd {{ base_dir }}
       ./start-all.sh \
-        -d {{ scylla_monitoring_data_path }} \
-        -f {{ scylla_monitoring_alertdata_path }} \
+        -d {{ scylla_monitoring_prometheus_data_path }} \
+        -f {{ scylla_monitoring_alertmanager_data_path }} \
         -v {{ scylla_monitoring_dashboards_versions|join(',') }} \
-        -s {{ scylla_monitoring_config_path }}/scylla_servers.yml \
-        -N {{ scylla_monitoring_config_path }}/scylla_manager_servers.yml \
-        -r {{ scylla_monitoring_config_path }}/rule_config.yml \
-        -R {{ scylla_monitoring_prom_rules_path }}/ \
+        -s {{ scylla_monitoring_prometheus_config_path }}/scylla_servers.yml \
+        -N {{ scylla_monitoring_prometheus_config_path }}/scylla_manager_servers.yml \
+        -r {{ scylla_monitoring_prometheus_config_path }}/rule_config.yml \
+        -R {{ scylla_monitoring_prometheus_prom_rules_path }}/ \
         -b --storage.tsdb.retention.time={{ scylla_monitoring_retention }} \
         {{ scylla_monitoring_params | default('') }}
     ignore_errors: true
@@ -76,13 +76,13 @@
     shell: |
       cd {{ base_dir }}
       ./start-all.sh \
-        -d {{ scylla_monitoring_data_path }} \
-        -f {{ scylla_monitoring_alertdata_path }} \
+        -d {{ scylla_monitoring_prometheus_data_path }} \
+        -f {{ scylla_monitoring_alertmanager_data_path }} \
         -v {{ scylla_monitoring_dashboards_versions|join(',') }} \
-        -s {{ scylla_monitoring_config_path }}/scylla_servers.yml \
-        -N {{ scylla_monitoring_config_path }}/scylla_manager_servers.yml \
-        -r {{ scylla_monitoring_config_path }}/rule_config.yml \
-        -R {{ scylla_monitoring_prom_rules_path }}/ \
+        -s {{ scylla_monitoring_prometheus_config_path }}/scylla_servers.yml \
+        -N {{ scylla_monitoring_prometheus_config_path }}/scylla_manager_servers.yml \
+        -r {{ scylla_monitoring_prometheus_config_path }}/rule_config.yml \
+        -R {{ scylla_monitoring_prometheus_prom_rules_path }}/ \
         -b --storage.tsdb.retention.time={{ scylla_monitoring_retention }} \
         {{ scylla_monitoring_params | default('') }}
   environment:
@@ -104,13 +104,13 @@
     shell: |
       cd {{ base_dir }}
       ./start-all.sh \
-        -d {{ scylla_monitoring_data_path }} \
-        -f {{ scylla_monitoring_alertdata_path }} \
+        -d {{ scylla_monitoring_prometheus_data_path }} \
+        -f {{ scylla_monitoring_alertmanager_data_path }} \
         -v {{ scylla_monitoring_dashboards_versions|join(',') }} \
-        -s {{ scylla_monitoring_config_path }}/scylla_servers.yml \
-        -N {{ scylla_monitoring_config_path }}/scylla_manager_servers.yml \
-        -r {{ scylla_monitoring_config_path }}/rule_config.yml \
-        -R {{ scylla_monitoring_prom_rules_path }}/ \
+        -s {{ scylla_monitoring_prometheus_config_path }}/scylla_servers.yml \
+        -N {{ scylla_monitoring_prometheus_config_path }}/scylla_manager_servers.yml \
+        -r {{ scylla_monitoring_prometheus_config_path }}/rule_config.yml \
+        -R {{ scylla_monitoring_prometheus_prom_rules_path }}/ \
         -b --storage.tsdb.retention.time={{ scylla_monitoring_retention }} \
         {{ scylla_monitoring_params | default('') }}
     ignore_errors: true
@@ -133,13 +133,13 @@
     shell: |
       cd {{ base_dir }}
       ./start-all.sh \
-        -d {{ scylla_monitoring_data_path }} \
-        -f {{ scylla_monitoring_alertdata_path }} \
+        -d {{ scylla_monitoring_prometheus_data_path }} \
+        -f {{ scylla_monitoring_alertmanager_data_path }} \
         -v {{ scylla_monitoring_dashboards_versions|join(',') }} \
-        -s {{ scylla_monitoring_config_path }}/scylla_servers.yml \
-        -N {{ scylla_monitoring_config_path }}/scylla_manager_servers.yml \
-        -r {{ scylla_monitoring_config_path }}/rule_config.yml \
-        -R {{ scylla_monitoring_prom_rules_path }}/ \
+        -s {{ scylla_monitoring_prometheus_config_path }}/scylla_servers.yml \
+        -N {{ scylla_monitoring_prometheus_config_path }}/scylla_manager_servers.yml \
+        -r {{ scylla_monitoring_prometheus_config_path }}/rule_config.yml \
+        -R {{ scylla_monitoring_prometheus_prom_rules_path }}/ \
         -b --storage.tsdb.retention.time={{ scylla_monitoring_retention }} \
         {{ scylla_monitoring_params | default('') }}
     become: true
