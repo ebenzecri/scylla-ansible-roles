@@ -34,8 +34,27 @@
     list_files: yes
   register: unpacked_files
 
-- set_fact:
-    base_dir: "{{ scylla_monitoring_installation_path }}/{{ unpacked_files.files[0] }}"
+- name: Get Scylla Monitoring archive name
+  ansible.builtin.set_fact:
+    scylla_monitoring_archive_name: "{{ unpacked_files.files[0] }}"
+
+- name: Get Scylla Monitoring version
+  ansible.builtin.set_fact:
+    scylla_monitoring_version: "{{ scylla_monitoring_archive_name.split('-') | last | replace ('/','') }}"
+
+- name: Set Scylla Monitoring main directory
+  ansible.builtin.set_fact:
+    base_dir: "{{ scylla_monitoring_installation_path }}/{{ scylla_monitoring_version }}"
+
+- name: "Ensure '{{ base_dir }}' doesn't exist"
+  ansible.builtin.file:
+    path: "{{ base_dir }}"
+    state: absent
+  become: true
+
+- name: Rename Scylla Monitoring main directory
+  ansible.builtin.shell: "mv {{ scylla_monitoring_installation_path }}/{{ unpacked_files.files[0] }} {{ base_dir }}"
+  become: true
 
 - stat:
     path: "{{ scylla_servers_yml_path }}"
