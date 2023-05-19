@@ -49,7 +49,9 @@
       cd {{ base_dir }}
       ./start-all.sh \
         -d {{ scylla_monitoring_prometheus_data_path }} \
+        -G {{ scylla_monitoring_grafana_data_path }} \
         -f {{ scylla_monitoring_alertmanager_data_path }} \
+        -k {{ scylla_monitoring_loki_data_path }} \
         -v {{ scylla_monitoring_dashboards_versions|join(',') }} \
         -s {{ scylla_monitoring_prometheus_config_path }}/scylla_servers.yml \
         -N {{ scylla_monitoring_prometheus_config_path }}/scylla_manager_servers.yml \
@@ -77,7 +79,9 @@
       cd {{ base_dir }}
       ./start-all.sh \
         -d {{ scylla_monitoring_prometheus_data_path }} \
+        -G {{ scylla_monitoring_grafana_data_path }} \
         -f {{ scylla_monitoring_alertmanager_data_path }} \
+        -k {{ scylla_monitoring_loki_data_path }} \
         -v {{ scylla_monitoring_dashboards_versions|join(',') }} \
         -s {{ scylla_monitoring_prometheus_config_path }}/scylla_servers.yml \
         -N {{ scylla_monitoring_prometheus_config_path }}/scylla_manager_servers.yml \
@@ -105,7 +109,9 @@
       cd {{ base_dir }}
       ./start-all.sh \
         -d {{ scylla_monitoring_prometheus_data_path }} \
+        -G {{ scylla_monitoring_grafana_data_path }} \
         -f {{ scylla_monitoring_alertmanager_data_path }} \
+        -k {{ scylla_monitoring_loki_data_path }} \
         -v {{ scylla_monitoring_dashboards_versions|join(',') }} \
         -s {{ scylla_monitoring_prometheus_config_path }}/scylla_servers.yml \
         -N {{ scylla_monitoring_prometheus_config_path }}/scylla_manager_servers.yml \
@@ -134,7 +140,9 @@
       cd {{ base_dir }}
       ./start-all.sh \
         -d {{ scylla_monitoring_prometheus_data_path }} \
+        -G {{ scylla_monitoring_grafana_data_path }} \
         -f {{ scylla_monitoring_alertmanager_data_path }} \
+        -k {{ scylla_monitoring_loki_data_path }} \
         -v {{ scylla_monitoring_dashboards_versions|join(',') }} \
         -s {{ scylla_monitoring_prometheus_config_path }}/scylla_servers.yml \
         -N {{ scylla_monitoring_prometheus_config_path }}/scylla_manager_servers.yml \
