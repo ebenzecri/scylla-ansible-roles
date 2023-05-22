@@ -76,40 +76,4 @@
   environment:
     SCYLLA_USER: "{% if monitoring_cql_username is defined and monitoring_cql_password is defined %}{{ monitoring_cql_username }}{% endif %}"
     SCYLLA_PSSWD: "{% if monitoring_cql_username is defined and monitoring_cql_password is defined %}{{ monitoring_cql_password }}{% endif %}"
-  when:
-    - run_docker_with_sudo is defined and run_docker_with_sudo|bool == False or
-      run_docker_with_sudo is not defined
-
-- name: Start monitoring
-  block:
-  - name: ensure monitoring is stopped
-    shell: |
-      cd {{ base_dir }}
-      ./kill-all.sh
-    become: true
-
-  - name: start scylla-monitoring
-    ansible.builtin.shell: "{{ start_scylla_monitoring_script.dest }}"
-    ignore_errors: true
-    become: true
-
-  # Workaround for potential inner networking issue under docker
-  - name: Stop monitoring again
-    shell: |
-      cd {{ base_dir }}
-      ./kill-all.sh
-    become: true
-
-  - name: Restart the docker service
-    service:
-      name: docker
-      state: restarted
-    become: true
-
-  - name: start scylla-monitoring
-    ansible.builtin.shell: "{{ start_scylla_monitoring_script.dest }}"
-    become: true
-  environment:
-    SCYLLA_USER: "{% if monitoring_cql_username is defined and monitoring_cql_password is defined %}{{ monitoring_cql_username }}{% endif %}"
-    SCYLLA_PSSWD: "{% if monitoring_cql_username is defined and monitoring_cql_password is defined %}{{ monitoring_cql_password }}{% endif %}"
-  when: run_docker_with_sudo is defined and run_docker_with_sudo|bool == True
+  become: "{{ run_docker_with_sudo | bool | default(False) }}"
