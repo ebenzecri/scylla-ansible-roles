@@ -52,22 +52,5 @@
         - docker-ce
         - docker-ce-cli
         - containerd.io
-
-  - name: create docker group
-    group:
-      name: docker
-      state: present
-
-  - name: add user to the docker group
-    user:
-      name: '{{ ansible_user_id }}'
-      groups: docker
-      append: yes
-
-  - name: enable docker service
-    service:
-      name: docker
-      state: started
-      enabled: yes
   become: true
   when: install_type == "docker"

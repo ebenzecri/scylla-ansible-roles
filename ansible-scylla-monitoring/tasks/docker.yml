@@ -10,25 +10,40 @@
   become: true
   when: run_docker_with_sudo is defined and run_docker_with_sudo|bool == True
 
-- name: Populate service facts
-  service_facts:
+- name: create docker group
+  group:
+    name: docker
+    state: present
+  become: true
 
-- name: restart the docker daemon again
+- name: "Get all groups '{{ ansible_user_id }}' has its membership to 'docker' group active"
+  ansible.builtin.shell: id
+  register: user_info
+
+- name: add user to the docker group
+  user:
+    name: '{{ ansible_user_id }}'
+    groups: docker
+    append: yes
+  become: true
+
+- name: "Reboot if '{{ ansible_user_id }}' membership to 'docker' group it not active"
+  ansible.builtin.reboot:
+    msg: "Rebooted by Ansible"
+    connect_timeout: 5
+    reboot_timeout: 600
+    pre_reboot_delay: 0
+    post_reboot_delay: 30
+    test_command: id
+  when: "not '(docker)' in user_info.stdout"
+  become: true
+
+- name: enable docker service
   service:
     name: docker
-    state: restarted
+    state: started
     enabled: yes
   become: true
-  when: ansible_facts.services["docker.service"] is defined
-
-- name: update docker.sock permissions to work around the restart issue
-  file:
-    path: /var/run/docker.sock
-    owner: root
-    group: root
-    mode: '0666'
-  become: true
-  when: ansible_facts.services["docker.service"] is defined
 
 - set_fact:
     monitoring_cql_username: "{{ item.split('=')[0] }}"
@@ -46,33 +61,8 @@
   register: start_scylla_monitoring_script
   become: true
 
-- name: Start monitoring
-  block:
-  - name: ensure monitoring is stopped
-    shell: |
-      cd {{ base_dir }}
-      ./kill-all.sh
-      sudo ./kill-all.sh
-
-  - name: start scylla-monitoring
-    ansible.builtin.shell: "{{ start_scylla_monitoring_script.dest }}"
-    ignore_errors: true
-
-  # Workaround for potential inner networking issue under docker
-  - name: Stop monitoring again
-    shell: |
-      cd {{ base_dir }}
-      ./kill-all.sh
-      sudo ./kill-all.sh
-
-  - name: Restart the docker service
-    service:
-      name: docker
-      state: restarted
-    become: true
-
-  - name: Start Scylla Monitoring stack
-    ansible.builtin.shell: "{{ start_scylla_monitoring_script.dest }}"
+- name: Start Scylla Monitoring stack
+  ansible.builtin.shell: "{{ start_scylla_monitoring_script.dest }}"
   environment:
     SCYLLA_USER: "{% if monitoring_cql_username is defined and monitoring_cql_password is defined %}{{ monitoring_cql_username }}{% endif %}"
     SCYLLA_PSSWD: "{% if monitoring_cql_username is defined and monitoring_cql_password is defined %}{{ monitoring_cql_password }}{% endif %}"
