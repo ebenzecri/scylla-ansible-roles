@@ -36,6 +36,16 @@
   when: "'cql_credentials' in groups and item.split('=')[0] == scylla_monitoring_cql_default_user | default('scylla_cql_monitor')"
   loop: "{{ groups['cql_credentials'] }}"
 
+- name: "Copy 'start_scylla_monitoring_{{ scylla_monitoring_version | replace('.', '_') }}.sh'"
+  ansible.builtin.template:
+    src: templates/start_scylla_monitoring.j2
+    dest: "{{ scylla_monitoring_installation_path }}/start_scylla_monitoring_{{ scylla_monitoring_version | replace('.', '_') }}.sh"
+    owner: "{{ ansible_user_id }}"
+    group: "{{ ansible_user_id }}"
+    mode: '0755'
+  register: start_scylla_monitoring_script
+  become: true
+
 - name: Start monitoring
   block:
   - name: ensure monitoring is stopped
@@ -45,20 +55,7 @@
       sudo ./kill-all.sh
 
   - name: start scylla-monitoring
-    shell: |
-      cd {{ base_dir }}
-      ./start-all.sh \
-        -d {{ scylla_monitoring_prometheus_data_path }} \
-        -G {{ scylla_monitoring_grafana_data_path }} \
-        -f {{ scylla_monitoring_alertmanager_data_path }} \
-        -k {{ scylla_monitoring_loki_data_path }} \
-        -v {{ scylla_monitoring_dashboards_versions|join(',') }} \
-        -s {{ scylla_monitoring_prometheus_config_path }}/scylla_servers.yml \
-        -N {{ scylla_monitoring_prometheus_config_path }}/scylla_manager_servers.yml \
-        -r {{ scylla_monitoring_prometheus_config_path }}/rule_config.yml \
-        -R {{ scylla_monitoring_prometheus_prom_rules_path }}/ \
-        -b --storage.tsdb.retention.time={{ scylla_monitoring_retention }} \
-        {{ scylla_monitoring_params | default('') }}
+    ansible.builtin.shell: "{{ start_scylla_monitoring_script.dest }}"
     ignore_errors: true
 
   # Workaround for potential inner networking issue under docker
@@ -74,21 +71,8 @@
       state: restarted
     become: true
 
-  - name: start scylla-monitoring
-    shell: |
-      cd {{ base_dir }}
-      ./start-all.sh \
-        -d {{ scylla_monitoring_prometheus_data_path }} \
-        -G {{ scylla_monitoring_grafana_data_path }} \
-        -f {{ scylla_monitoring_alertmanager_data_path }} \
-        -k {{ scylla_monitoring_loki_data_path }} \
-        -v {{ scylla_monitoring_dashboards_versions|join(',') }} \
-        -s {{ scylla_monitoring_prometheus_config_path }}/scylla_servers.yml \
-        -N {{ scylla_monitoring_prometheus_config_path }}/scylla_manager_servers.yml \
-        -r {{ scylla_monitoring_prometheus_config_path }}/rule_config.yml \
-        -R {{ scylla_monitoring_prometheus_prom_rules_path }}/ \
-        -b --storage.tsdb.retention.time={{ scylla_monitoring_retention }} \
-        {{ scylla_monitoring_params | default('') }}
+  - name: Start Scylla Monitoring stack
+    ansible.builtin.shell: "{{ start_scylla_monitoring_script.dest }}"
   environment:
     SCYLLA_USER: "{% if monitoring_cql_username is defined and monitoring_cql_password is defined %}{{ monitoring_cql_username }}{% endif %}"
     SCYLLA_PSSWD: "{% if monitoring_cql_username is defined and monitoring_cql_password is defined %}{{ monitoring_cql_password }}{% endif %}"
@@ -105,20 +89,7 @@
     become: true
 
   - name: start scylla-monitoring
-    shell: |
-      cd {{ base_dir }}
-      ./start-all.sh \
-        -d {{ scylla_monitoring_prometheus_data_path }} \
-        -G {{ scylla_monitoring_grafana_data_path }} \
-        -f {{ scylla_monitoring_alertmanager_data_path }} \
-        -k {{ scylla_monitoring_loki_data_path }} \
-        -v {{ scylla_monitoring_dashboards_versions|join(',') }} \
-        -s {{ scylla_monitoring_prometheus_config_path }}/scylla_servers.yml \
-        -N {{ scylla_monitoring_prometheus_config_path }}/scylla_manager_servers.yml \
-        -r {{ scylla_monitoring_prometheus_config_path }}/rule_config.yml \
-        -R {{ scylla_monitoring_prometheus_prom_rules_path }}/ \
-        -b --storage.tsdb.retention.time={{ scylla_monitoring_retention }} \
-        {{ scylla_monitoring_params | default('') }}
+    ansible.builtin.shell: "{{ start_scylla_monitoring_script.dest }}"
     ignore_errors: true
     become: true
 
@@ -136,20 +107,7 @@
     become: true
 
   - name: start scylla-monitoring
-    shell: |
-      cd {{ base_dir }}
-      ./start-all.sh \
-        -d {{ scylla_monitoring_prometheus_data_path }} \
-        -G {{ scylla_monitoring_grafana_data_path }} \
-        -f {{ scylla_monitoring_alertmanager_data_path }} \
-        -k {{ scylla_monitoring_loki_data_path }} \
-        -v {{ scylla_monitoring_dashboards_versions|join(',') }} \
-        -s {{ scylla_monitoring_prometheus_config_path }}/scylla_servers.yml \
-        -N {{ scylla_monitoring_prometheus_config_path }}/scylla_manager_servers.yml \
-        -r {{ scylla_monitoring_prometheus_config_path }}/rule_config.yml \
-        -R {{ scylla_monitoring_prometheus_prom_rules_path }}/ \
-        -b --storage.tsdb.retention.time={{ scylla_monitoring_retention }} \
-        {{ scylla_monitoring_params | default('') }}
+    ansible.builtin.shell: "{{ start_scylla_monitoring_script.dest }}"
     become: true
   environment:
     SCYLLA_USER: "{% if monitoring_cql_username is defined and monitoring_cql_password is defined %}{{ monitoring_cql_username }}{% endif %}"
