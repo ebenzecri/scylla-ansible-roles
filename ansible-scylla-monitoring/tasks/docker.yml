@@ -1,5 +1,5 @@
 ---
-- name: Change owner and group for 'data' directory
+- name: "Change owner and group for '{{ scylla_monitoring_prometheus_data_path }}' directory"
   ansible.builtin.file:
     path: "{{ scylla_monitoring_prometheus_data_path }}"
     state: directory
@@ -8,26 +8,28 @@
     owner: "nobody"
     group: "nogroup"
   become: true
-  when: run_docker_with_sudo is defined and run_docker_with_sudo|bool == True
+  when:
+    - run_docker_with_sudo is defined
+    - run_docker_with_sudo | bool
 
-- name: create docker group
-  group:
+- name: Create 'docker' group
+  ansible.builtin.group:
     name: docker
     state: present
   become: true
 
-- name: "Get all groups '{{ ansible_user_id }}' has its membership to 'docker' group active"
+- name: "Get all groups of '{{ ansible_user_id }}' user"
   ansible.builtin.shell: id
   register: user_info
 
-- name: add user to the docker group
-  user:
+- name: "Append 'docker' group to user '{{ ansible_user_id }}'"
+  ansible.builtin.user:
     name: '{{ ansible_user_id }}'
     groups: docker
     append: yes
   become: true
 
-- name: "Reboot if '{{ ansible_user_id }}' membership to 'docker' group it not active"
+- name: "Reboot if '{{ ansible_user_id }}' user membership to 'docker' group it not active"
   ansible.builtin.reboot:
     msg: "Rebooted by Ansible"
     connect_timeout: 5
@@ -38,20 +40,21 @@
   when: "not '(docker)' in user_info.stdout"
   become: true
 
-- name: enable docker service
-  service:
+- name: Enable and start Docker service
+  ansible.builtin.service:
     name: docker
     state: started
     enabled: yes
   become: true
 
-- set_fact:
+- name: Get CQL credentials
+  ansible.builtin.set_fact:
     monitoring_cql_username: "{{ item.split('=')[0] }}"
     monitoring_cql_password: "{{ item.split('=')[1] }}"
   when: "'cql_credentials' in groups and item.split('=')[0] == scylla_monitoring_cql_default_user | default('scylla_cql_monitor')"
   loop: "{{ groups['cql_credentials'] }}"
 
-- name: "Copy 'start_scylla_monitoring_{{ scylla_monitoring_version | replace('.', '_') }}.sh'"
+- name: "Create 'start_scylla_monitoring_{{ scylla_monitoring_version | replace('.', '_') }}.sh' script"
   ansible.builtin.template:
     src: templates/start_scylla_monitoring.j2
     dest: "{{ scylla_monitoring_installation_path }}/start_scylla_monitoring_{{ scylla_monitoring_version | replace('.', '_') }}.sh"
@@ -66,4 +69,4 @@
   environment:
     SCYLLA_USER: "{% if monitoring_cql_username is defined and monitoring_cql_password is defined %}{{ monitoring_cql_username }}{% endif %}"
     SCYLLA_PSSWD: "{% if monitoring_cql_username is defined and monitoring_cql_password is defined %}{{ monitoring_cql_password }}{% endif %}"
-  become: "{{ run_docker_with_sudo | bool | default(False) }}"
+  become: "{{ run_docker_with_sudo | bool | default(false) }}"
