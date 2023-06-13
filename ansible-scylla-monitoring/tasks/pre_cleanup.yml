@@ -1,0 +1,14 @@
+---
+- name: Wipe specific Scylla Monitoring data directories
+  ansible.builtin.file:
+    path: "{{ item.target }}"
+    state: absent
+  when: "{{ item.wipe }}"
+  loop:
+    - { target: '{{ scylla_monitoring_prometheus_data_path }}', wipe: '{{ scylla_monitoring_prometheus_data_wipe | default(false) }}' }
+    - { target: '{{ scylla_monitoring_grafana_data_path }}', wipe: '{{ scylla_monitoring_grafana_data_wipe | default(false) }}' }
+    - { target: '{{ scylla_monitoring_alertmanager_data_path }}', wipe: '{{ scylla_monitoring_alertmanager_data_wipe | default(false) }}' }
+    - { target: '{{ scylla_monitoring_loki_data_path }}', wipe: '{{ scylla_monitoring_loki_data_wipe | default(false) }}' }
+
+- name: Enforce Scylla Monitoring directory hierarchy
+  ansible.builtin.include_tasks: directories_structure.yml

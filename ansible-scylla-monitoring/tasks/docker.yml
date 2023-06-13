@@ -1,4 +1,13 @@
 ---
+- name: Stop Docker service
+  ansible.builtin.service:
+    name: docker
+    state: stopped
+  become: true
+
+- name: Wipe specific Scylla Monitoring data directories
+  ansible.builtin.include_tasks: pre_cleanup.yml
+
 - name: "Change owner and group for '{{ scylla_monitoring_prometheus_data_path }}' directory"
   ansible.builtin.file:
     path: "{{ scylla_monitoring_prometheus_data_path }}"

@@ -1,22 +1,6 @@
 ---
 - name: Create Scylla Monitoring directory hierarchy
-  ansible.builtin.file:
-    path: "{{ item }}"
-    state: directory
-    mode: '0755'
-    recurse: yes
-    owner: "{{ ansible_user_id }}"
-    group: "{{ ansible_user_id }}"
-  become: true
-  loop:
-    - "{{ scylla_monitoring_installation_path }}"
-    - "{{ scylla_monitoring_var_path }}"
-    - "{{ scylla_monitoring_prometheus_data_path }}"
-    - "{{ scylla_monitoring_prometheus_config_path }}"
-    - "{{ scylla_monitoring_prometheus_prom_rules_path }}"
-    - "{{ scylla_monitoring_grafana_data_path }}"
-    - "{{ scylla_monitoring_alertmanager_data_path }}"
-    - "{{ scylla_monitoring_loki_data_path }}"
+  ansible.builtin.include_tasks: directories_structure.yml
 
 - name: download the monitoring archive
   get_url:

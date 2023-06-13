@@ -33,6 +33,12 @@ scylla_monitoring_grafana_data_path: "{{ scylla_monitoring_var_path }}/grafana_d
 scylla_monitoring_alertmanager_data_path: "{{ scylla_monitoring_var_path }}/alertmanager_data"
 scylla_monitoring_loki_data_path: "{{ scylla_monitoring_var_path }}/loki_data"
 
+# Wipe existing data (Prometheus, Grafana, Alertmanager or Loki)
+scylla_monitoring_prometheus_data_wipe: False
+scylla_monitoring_grafana_data_wipe: False
+scylla_monitoring_alertmanager_data_wipe: False
+scylla_monitoring_loki_data_wipe: False
+
 # If set to True, the role will generate scylla_servers.yml based on the output of nodetool status
 # If set to False, the dc variable must be defined in the inventory for each one of the nodes and the role
 # will use the information from the inventory to generate scylla_servers.yml.
