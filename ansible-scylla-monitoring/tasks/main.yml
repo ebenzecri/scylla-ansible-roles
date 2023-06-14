@@ -1,23 +1,20 @@
 ---
-# - name: os-specific vars
-#   include_vars: "{{ ansible_os_family }}.yml"
-
 - name: Check for any existing legacy installation/configuration
-  include_tasks: legacy.yml
+  ansible.builtin.include_tasks: legacy.yml
 
 - name: os-specific tasks
-  include_tasks: "{{ ansible_os_family }}.yml"
+  ansible.builtin.include_tasks: "{{ ansible_os_family | lower }}.yml"
 
 - name: common tasks
-  include_tasks: common.yml
+  ansible.builtin.include_taskss: common.yml
 
 - name: install dockerized monitoring
-  include_tasks: docker.yml
+  ansible.builtin.include_tasks: docker.yml
   when: install_type == 'docker'
 
 - name: install non-dockerized monitoring
-  include_tasks: non-docker.yml
+  ansible.builtin.include_tasks: non-docker.yml
   when: install_type != 'docker'
 
 - name: Post-installation cleanup
-  include_tasks: post_cleanup.yml
+  ansible.builtin.include_tasks: post_cleanup.yml
