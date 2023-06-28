@@ -28,7 +28,11 @@ receivers:
     smarthost: smtp.gmail.com:587
     auth_username: {{ alerts_sender_email }}
     auth_identity: {{ alerts_sender_email }}
+{% if alerts_sender_password_file | default(False, true) | bool %}
+    auth_password_file: '{{ scylla_monitoring_config_path }}/email_auth.password'
+{% else %}
     auth_password: {{ alerts_sender_password }}
+{% endif %}
     send_resolved: false
     headers:
       Subject: '[PRODUCTION] NORMAL Managed-Services - Cluster:{{ scylla_cluster_name }} Account: {{ account_name }}'
@@ -39,7 +43,11 @@ receivers:
     smarthost: smtp.gmail.com:587
     auth_username: {{ alerts_sender_email }}
     auth_identity: {{ alerts_sender_email }}
+{% if alerts_sender_password_file | default(False, true) | bool %}
+    auth_password_file: '{{ scylla_monitoring_config_path }}/email_auth.password'
+{% else %}
     auth_password: {{ alerts_sender_password }}
+{% endif %}
     send_resolved: false
     headers:
       Subject: '[PRODUCTION] URGENT Managed-Services - Cluster:{{ scylla_cluster_name }} Account: {{ account_name }}'

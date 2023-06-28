@@ -189,9 +189,19 @@
     mode: '0644'
   when: rule_config_stat.stat.exists|bool
 
-- name: Generate rule_config if not provided by the user
-  template:
-    src: templates/rule_config.yml.j2
-    dest: "{{ scylla_monitoring_config_path }}/rule_config.yml"
-    mode: '0644'
+- name: Generate 'rule_config.yml' if not provided by the user
+  block:
+  - name: Generate rule_config if not provided by the user
+    template:
+      src: templates/rule_config.yml.j2
+      dest: "{{ scylla_monitoring_config_path }}/rule_config.yml"
+      mode: '0644'
+  - name: Create 'email_auth.password'
+    ansible.builtin.template:
+      src: templates/email_auth.password.j2
+      dest: "{{ scylla_monitoring_config_path }}/email_auth.password"
+      mode: '0600'
+    when: 
+      - alerts_sender_password_file is defined
+      - alerts_sender_password_file
   when: rule_config_stat.stat.exists|bool == false

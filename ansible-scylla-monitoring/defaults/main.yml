@@ -58,6 +58,7 @@ rule_config_yml_path: rule_config.yml
 # alerts_sender_email: example-email@scylladb.com
 # alerts_sender_password: Sender_p@ssw0rd
 # alerts_receiver_email: example-email@scylladb.com
+# alerts_sender_password_file: True    # Only available for Scylla Monitoring >= 4.4.0
 
 # How long to keep data for.
 # Format: [NUMBER][s|m|h|d]
