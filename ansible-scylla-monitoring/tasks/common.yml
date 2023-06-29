@@ -191,8 +191,8 @@
 
 - name: Generate 'rule_config.yml' if not provided by the user
   block:
-  - name: Generate rule_config if not provided by the user
-    template:
+  - name: Create 'rule_config.yml'
+    ansible.builtin.template:
       src: templates/rule_config.yml.j2
       dest: "{{ scylla_monitoring_config_path }}/rule_config.yml"
       mode: '0644'
